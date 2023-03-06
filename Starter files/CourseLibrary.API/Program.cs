@@ -10,8 +10,5 @@ var app = builder
 // we can start with a clean slate
 await app.ResetDatabaseAsync();
 
-app.Map("/index", builder => {
-    return new Task<string>(() => "Hello world");
-    });
 // run the app
 app.Run();
