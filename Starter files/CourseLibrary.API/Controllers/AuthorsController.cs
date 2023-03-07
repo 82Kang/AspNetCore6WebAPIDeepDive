@@ -28,7 +28,7 @@ public class AuthorsController : ControllerBase
         return Ok("Hello Mom! How are you");
     }
 
-    [HttpGet("api/author")] 
+    [HttpGet("api/authors")] 
     public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors()
     { 
         // get authors from repo
@@ -39,7 +39,7 @@ public class AuthorsController : ControllerBase
         return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo));
     }
 
-    [HttpGet("api/getauthor/{authorId}", Name = "GetAuthor")]
+    [HttpGet("api/authors/{authorId}", Name = "GetAuthor")]
     public async Task<ActionResult<AuthorDto>> GetAuthor(Guid authorId)
     {
         // get author from repo
