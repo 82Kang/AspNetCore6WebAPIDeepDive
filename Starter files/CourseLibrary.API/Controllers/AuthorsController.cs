@@ -25,10 +25,10 @@ public class AuthorsController : ControllerBase
     [HttpGet("api/author/hello")] 
     public async Task<IActionResult> HelloAPI()
     {
-        return Ok("Hello world");
+        return Ok("Hello Mom! How are you");
     }
 
-    [HttpPost("api/author")] 
+    [HttpGet("api/author")] 
     public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors()
     { 
         // get authors from repo
