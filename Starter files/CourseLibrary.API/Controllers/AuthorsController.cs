@@ -22,12 +22,6 @@ public class AuthorsController : ControllerBase
             throw new ArgumentNullException(nameof(mapper));
     }
 
-    [HttpGet("api/author/hello")] 
-    public async Task<IActionResult> HelloAPI()
-    {
-        return Ok("Hello Mom! How are you");
-    }
-
     [HttpGet("api/authors")] 
     public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors()
     { 

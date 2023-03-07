@@ -25,7 +25,7 @@ internal static class StartupHelperExtensions
     return builder.Build();
   }
 
-  // Configure the request/response pipelien
+  // Configure the request/response pipeline
   public static WebApplication ConfigurePipeline(this WebApplication app)
   { 
     if (app.Environment.IsDevelopment())
