@@ -1,6 +1,7 @@
 ﻿using CourseLibrary.API.DbContexts;
 using CourseLibrary.API.Services;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Serialization;
 
 namespace CourseLibrary.API;
 
@@ -12,7 +13,12 @@ internal static class StartupHelperExtensions
     builder.Services.AddControllers(configure => 
         {
         configure.ReturnHttpNotAcceptable = true;
-        }).AddXmlDataContractSerializerFormatters();
+        // configure.InputFormatters = ..... some input formatter
+        // not using here since we already using AddXmlDataContractSerializerFormatters
+        }).AddNewtonsoftJson(setupAction =>
+        {
+        setupAction.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+        }).AddXmlDataContractSerializerFormatters(); // This adds both the input and the output xml formatters
 
     builder.Services.AddScoped<ICourseLibraryRepository, 
       CourseLibraryRepository>();
