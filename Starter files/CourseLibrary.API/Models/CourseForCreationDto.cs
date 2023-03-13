@@ -1,14 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace CourseLibrary.API.Models;
 
-namespace CourseLibrary.API.Models;
-
-public class CourseForCreationDto
-{
-  [Required]
-  [MaxLength(100)]
-  public string Title { get; set; } = string.Empty;
-  [Required]
-  [MaxLength(1500)]
-  public string Description { get; set; } = string.Empty;
-}
+public class CourseForCreationDto : CourseForManipulationDto { }
 
