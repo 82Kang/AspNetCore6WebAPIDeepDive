@@ -122,7 +122,12 @@ public class CoursesController : ControllerBase
     if (courseEntity == null)
     {
       var courseDto = new CourseForUpdateDto();
-      patchDocument.ApplyTo(courseDto);
+      patchDocument.ApplyTo(courseDto, ModelState);
+
+      if (!TryValidateModel(courseDto))
+      {
+        return ValidationProblem(ModelState);
+      }
       courseEntity = _mapper.Map<Entities.Course>(courseDto);
       courseEntity.Id = courseId;
 
