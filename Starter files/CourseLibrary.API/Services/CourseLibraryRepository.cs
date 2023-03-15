@@ -1,5 +1,6 @@
 ﻿using CourseLibrary.API.DbContexts;
 using CourseLibrary.API.Entities;
+using CourseLibrary.API.Helpers;
 using CourseLibrary.API.ResourceParameters;
 using Microsoft.EntityFrameworkCore;
 
@@ -127,17 +128,20 @@ public class CourseLibraryRepository : ICourseLibraryRepository
         return await _context.Authors.ToListAsync();
     }
 
-    public async Task<IEnumerable<Author>> GetAuthorsAsync(AuthorsResourceParameters authorResourceParam)
+    public async Task<PagedList<Author>> GetAuthorsAsync(AuthorsResourceParameters authorResourceParam)
     {
       if (authorResourceParam == null)
       {
         throw new ArgumentNullException("Resource parameter is null");
       }
 
+      /*
+       * Implement paging no matter what 
       if (string.IsNullOrWhiteSpace(authorResourceParam.MainCategory) || string.IsNullOrWhiteSpace(authorResourceParam.SearchQuery))
       {
         return await GetAuthorsAsync();
       }
+      */
 
       var allAuthors = _context.Authors as IQueryable<Author>;
 
@@ -154,8 +158,7 @@ public class CourseLibraryRepository : ICourseLibraryRepository
                                          || author.LastName.Contains(searchQuery)
                                          || author.MainCategory.Contains(searchQuery));
       }
-
-      return await allAuthors.ToListAsync();
+      return await PagedList<Author>.CreateAsync(allAuthors, authorResourceParam.PageNumber, authorResourceParam.PageSize); 
     }
 
     public async Task<IEnumerable<Author>> GetAuthorsAsync(IEnumerable<Guid> authorIds)
