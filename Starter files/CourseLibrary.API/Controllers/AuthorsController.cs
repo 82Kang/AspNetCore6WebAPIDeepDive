@@ -25,11 +25,12 @@ public class AuthorsController : ControllerBase
 
   [HttpHead]
   [HttpGet]
-  public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors()
+  public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors(string? mainCategory = ""
+                                                                    ,string? searchQuery = "")
   { 
     // get authors from repo
     var authorsFromRepo = await _courseLibraryRepository
-      .GetAuthorsAsync(); 
+      .GetAuthorsAsync(mainCategory, searchQuery); 
 
     // return them
     return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo));

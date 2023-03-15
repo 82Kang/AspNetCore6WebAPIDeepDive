@@ -126,6 +126,33 @@ public class CourseLibraryRepository : ICourseLibraryRepository
         return await _context.Authors.ToListAsync();
     }
 
+    public async Task<IEnumerable<Author>> GetAuthorsAsync(string? mainCategory, string? searchQuery)
+    {
+      if (string.IsNullOrWhiteSpace(mainCategory) || string.IsNullOrWhiteSpace(searchQuery))
+      {
+        return await GetAuthorsAsync();
+      }
+
+      searchQuery = searchQuery.Trim();
+      var allAuthors = _context.Authors as IQueryable<Author>;
+
+      if (!string.IsNullOrWhiteSpace(mainCategory))
+      {
+        mainCategory = mainCategory.Trim();
+        allAuthors = allAuthors.Where( author => author.MainCategory == mainCategory);
+      }
+
+      if (!string.IsNullOrWhiteSpace(searchQuery))
+      {
+        searchQuery = searchQuery.Trim();
+        allAuthors = allAuthors.Where( author => author.FirstName.Contains(searchQuery)
+                                         || author.LastName.Contains(searchQuery)
+                                         || author.MainCategory.Contains(searchQuery));
+      }
+
+      return await allAuthors.ToListAsync();
+    }
+
     public async Task<IEnumerable<Author>> GetAuthorsAsync(IEnumerable<Guid> authorIds)
     {
         if (authorIds == null)
