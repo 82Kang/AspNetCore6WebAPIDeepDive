@@ -23,6 +23,7 @@ public class AuthorsController : ControllerBase
       throw new ArgumentNullException(nameof(mapper));
   }
 
+  [HttpHead]
   [HttpGet]
   public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors()
   { 
