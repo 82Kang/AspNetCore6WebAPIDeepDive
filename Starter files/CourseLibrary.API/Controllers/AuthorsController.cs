@@ -1,5 +1,7 @@
 ﻿
+using System.Text.Json;
 using AutoMapper;
+using CourseLibrary.API.Helpers;
 using CourseLibrary.API.Models;
 using CourseLibrary.API.ResourceParameters;
 using CourseLibrary.API.Services;
@@ -24,17 +26,63 @@ public class AuthorsController : ControllerBase
       throw new ArgumentNullException(nameof(mapper));
   }
 
+  private string? CreateAuthorsResourceUri(AuthorsResourceParameters authorResParam
+                                           , ResourceUriType resourceType)
+  {
+    int pageShift = 0;
+    switch (resourceType)
+    {
+      case ResourceUriType.NextPage:
+        pageShift = 1;
+        break;
+
+      case ResourceUriType.PreviousPage:
+        pageShift = -1;
+        break;
+    }
+
+    return Url.Link("GetAuthors", new
+        {
+        pageNumber = authorResParam.PageNumber + pageShift,
+        pageSize = authorResParam.PageSize, 
+        mainCategory = authorResParam.MainCategory,
+        searchQuery = authorResParam.SearchQuery,
+        });
+  }
+
+  [HttpGet(Name = "GetAuthors")]
   [HttpHead]
-  [HttpGet]
   public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors(
       [FromQuery] AuthorsResourceParameters resourceParam)
   { 
     // get authors from repo
-    var authorsFromRepo = await _courseLibraryRepository
+    var authorsPagedFromRepo = await _courseLibraryRepository
       .GetAuthorsAsync(resourceParam); 
 
+    var previousPageLink = authorsPagedFromRepo.HasPrevious
+      ? CreateAuthorsResourceUri(
+          resourceParam
+          ,ResourceUriType.PreviousPage) : null;
+
+    var nextPageLink = authorsPagedFromRepo.HasNext
+      ? CreateAuthorsResourceUri(
+          resourceParam
+          ,ResourceUriType.NextPage) : null;
+
+    // create the object for custom header
+    var paginationMetadata = new 
+    {
+      totalCount = authorsPagedFromRepo.Count,
+      pageSize = authorsPagedFromRepo.PageSize,
+      currentPage = authorsPagedFromRepo.CurrentPage,
+      totalPages = authorsPagedFromRepo.TotalPages,
+      previousPageLink = previousPageLink,
+      nextPageLink = nextPageLink
+    };
+
+    Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
     // return them
-    return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsFromRepo));
+    return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsPagedFromRepo));
   }
 
   [HttpGet("{authorId}", Name = "GetAuthor")]
