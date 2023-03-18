@@ -30,7 +30,7 @@ static class IQueryableExtensions
         trimmedOrderClause.Remove(indexOfFirstSpace);
 
       if (!mappingDictionary.ContainsKey(propertyName))
-        throw new ArgumentException($"{nameof(mappingDictionary)} doesn't contain the property name");
+        throw new ArgumentException($"{nameof(mappingDictionary)} doesn't contain the property name {propertyName}");
 
       var propertyMappingVal = mappingDictionary[propertyName];
 

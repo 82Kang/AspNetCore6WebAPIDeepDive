@@ -15,15 +15,19 @@ public class AuthorsController : ControllerBase
 {
   private readonly ICourseLibraryRepository _courseLibraryRepository;
   private readonly IMapper _mapper;
+  private readonly IPropertyMappingService _propertyMappingService;
 
   public AuthorsController(
       ICourseLibraryRepository courseLibraryRepository,
-      IMapper mapper)
+      IMapper mapper,
+      IPropertyMappingService propertyMappingService)
   {
     _courseLibraryRepository = courseLibraryRepository ??
       throw new ArgumentNullException(nameof(courseLibraryRepository));
     _mapper = mapper ??
       throw new ArgumentNullException(nameof(mapper));
+    _propertyMappingService = propertyMappingService ??
+      throw new ArgumentNullException(nameof(propertyMappingService));
   }
 
   private string? CreateAuthorsResourceUri(AuthorsResourceParameters authorResParam
@@ -56,6 +60,10 @@ public class AuthorsController : ControllerBase
   public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors(
       [FromQuery] AuthorsResourceParameters resourceParam)
   { 
+    if (!_propertyMappingService.ValidMappingExistsFor<AuthorDto, Entities.Author>
+        (resourceParam.OrderBy != null ? resourceParam.OrderBy : ""))
+      return BadRequest();
+
     // get authors from repo
     var authorsPagedFromRepo = await _courseLibraryRepository
       .GetAuthorsAsync(resourceParam); 

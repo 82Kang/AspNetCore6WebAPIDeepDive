@@ -34,4 +34,27 @@ public class PropertyMappingService : IPropertyMappingService
     throw new Exception($"Can't find exact property mapping instance "
         + $"for <{typeof(TSource)}, {typeof(TDestination)}");
   }
+
+  public bool ValidMappingExistsFor<TSource, TDestination>(string fields)
+  {
+    if (string.IsNullOrWhiteSpace(fields))
+      return true;
+
+    var propertyMapping = GetPropertyMapping<TSource, TDestination>();
+    var fieldsAfterSplit = fields.Split(",");
+
+    foreach (var field in fieldsAfterSplit)
+    {
+      //can't trim the var in foreach, so we create another one
+      var trimmedField = field.Trim();
+      var orderDescending = trimmedField.EndsWith(" desc");
+
+      var indexOfFirstSpace = trimmedField.IndexOf(" ");
+      var propertyName = indexOfFirstSpace == -1 ? trimmedField :
+        trimmedField.Remove(indexOfFirstSpace);
+
+      if (!propertyMapping.ContainsKey(propertyName)) return false;
+    }
+    return true;
+  }
 }
