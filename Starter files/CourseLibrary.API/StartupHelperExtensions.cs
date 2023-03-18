@@ -1,4 +1,5 @@
 ﻿using CourseLibrary.API.DbContexts;
+using CourseLibrary.API.Helpers;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -44,6 +45,7 @@ internal static class StartupHelperExtensions
             };
           });
 
+    builder.Services.AddTransient<IPropertyMappingService, PropertyMappingService>();
     builder.Services.AddScoped<ICourseLibraryRepository, 
       CourseLibraryRepository>();
 
