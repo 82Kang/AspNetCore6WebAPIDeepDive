@@ -43,6 +43,7 @@ public class AuthorsController : ControllerBase
 
     return Url.Link("GetAuthors", new
         {
+        orderBy = authorResParam.OrderBy,
         pageNumber = authorResParam.PageNumber + pageShift,
         pageSize = authorResParam.PageSize, 
         mainCategory = authorResParam.MainCategory,
