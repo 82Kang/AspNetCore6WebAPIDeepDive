@@ -47,6 +47,7 @@ public class AuthorsController : ControllerBase
 
     return Url.Link("GetAuthors", new
         {
+        fields = authorResParam.fields,
         orderBy = authorResParam.OrderBy,
         pageNumber = authorResParam.PageNumber + pageShift,
         pageSize = authorResParam.PageSize, 
@@ -57,7 +58,7 @@ public class AuthorsController : ControllerBase
 
   [HttpGet(Name = "GetAuthors")]
   [HttpHead]
-  public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors(
+  public async Task<IActionResult> GetAuthors(
       [FromQuery] AuthorsResourceParameters resourceParam)
   { 
     if (!_propertyMappingService.ValidMappingExistsFor<AuthorDto, Entities.Author>
@@ -91,7 +92,7 @@ public class AuthorsController : ControllerBase
 
     Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
     // return them
-    return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsPagedFromRepo));
+    return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsPagedFromRepo).ShapeData(resourceParam.fields));
   }
 
   [HttpGet("getit")]

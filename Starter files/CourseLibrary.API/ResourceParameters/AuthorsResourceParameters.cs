@@ -6,6 +6,7 @@ public class AuthorsResourceParameters
   public string? MainCategory { get; set; }
   public string? SearchQuery { get; set; }
   public string? OrderBy { get; set; } = "name";
+  public string? fields { get; set; }
 
   private int _pageSize = 10;
   public int PageSize
