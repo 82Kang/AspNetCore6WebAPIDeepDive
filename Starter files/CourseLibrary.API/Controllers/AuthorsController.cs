@@ -95,17 +95,8 @@ public class AuthorsController : ControllerBase
     return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsPagedFromRepo).ShapeData(resourceParam.fields));
   }
 
-  [HttpGet("getit")]
-  public ActionResult<string> GetIt(Guid authorId)
-  {
-
-    var list = Queryable.AsQueryable(new [] {new { name = "def", occ = "cricketer" }, new { name = "abc", occ = "hockey" }});
-    var sorted = list.DoSort("name");
-    return Ok(list);
-  }
-
   [HttpGet("{authorId}", Name = "GetAuthor")]
-  public async Task<ActionResult<AuthorDto>> GetAuthor(Guid authorId)
+  public async Task<ActionResult<AuthorDto>> GetAuthor(Guid authorId, string? fields)
   {
     // get author from repo
     var authorFromRepo = await _courseLibraryRepository.GetAuthorAsync(authorId);
@@ -114,9 +105,8 @@ public class AuthorsController : ControllerBase
     {
       return NotFound();
     }
-
     // return author
-    return Ok(_mapper.Map<AuthorDto>(authorFromRepo));
+    return Ok(_mapper.Map<AuthorDto>(authorFromRepo).ShapeData(fields));
   }
 
   [HttpPost]
@@ -139,5 +129,14 @@ public class AuthorsController : ControllerBase
   {
     Response.Headers.Add("Allow", "GET, HEAD, POST, OPTIONS");
     return Ok();
+  }
+
+  [HttpGet("getit")]
+  public ActionResult<string> GetIt(Guid authorId)
+  {
+
+    var list = Queryable.AsQueryable(new [] {new { name = "def", occ = "cricketer" }, new { name = "abc", occ = "hockey" }});
+    var sorted = list.DoSort("name");
+    return Ok(list);
   }
 }

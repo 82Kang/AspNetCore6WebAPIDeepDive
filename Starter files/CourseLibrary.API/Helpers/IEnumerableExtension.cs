@@ -44,6 +44,41 @@ public static class IEnumerableExtensions
 
       return expObjList;
     }
+
+  public static ExpandoObject ShapeData<TSource>
+    (this TSource source,
+     string? fields)
+    {
+      if (source == null) throw new ArgumentNullException(nameof(source));
+
+      var propertyInfoList = new List<PropertyInfo>();
+      var bindingInfo = BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance;
+
+      if (string.IsNullOrWhiteSpace(fields))
+      {
+        var propertyInfo = typeof(TSource).GetProperties(bindingInfo);
+        propertyInfoList.AddRange(propertyInfo);
+
+      }
+      else
+      {
+        /* Using AddRange might have performance overhead instead of just using a foreach loop */
+        propertyInfoList.AddRange(fields.Split(",").Select<string, PropertyInfo> (f => {
+                                      f = f.Trim();
+                                      return typeof(TSource).GetProperty(f, bindingInfo) ?? 
+                                      throw new InvalidOperationException(
+                                          $"Property (field) {f} not found on {typeof(TSource)}");
+                                   }));
+      }
+
+      /* Using AddRange might have performance overhead instead of just using a foreach loop */
+      IDictionary<string, object?> expObj = new ExpandoObject();
+      propertyInfoList.ForEach( propInfo => {
+          expObj.Add(propInfo.Name, propInfo.GetValue(source));
+      });
+
+      return (expObj as ExpandoObject)!;
+    }
 }
 
       /* was not thinking that we have a ForEach construct in c#
