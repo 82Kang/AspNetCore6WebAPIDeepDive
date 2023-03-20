@@ -1,4 +1,5 @@
 ﻿
+using System.Dynamic;
 using System.Text.Json;
 using AutoMapper;
 using CourseLibrary.API.Helpers;
@@ -51,6 +52,11 @@ public class AuthorsController : ControllerBase
 
       case ResourceUriType.PreviousPage:
         pageShift = -1;
+        break;
+
+      case ResourceUriType.ThisPage:
+      default:
+        pageShift = 0;
         break;
     }
 
@@ -105,6 +111,27 @@ public class AuthorsController : ControllerBase
     return authorLinks;
   }
 
+  private IEnumerable<LinkDto> CreateLinksForAuthors(AuthorsResourceParameters resourceParam)
+  {
+    var curPageLink = CreateAuthorsResourceUri(resourceParam, ResourceUriType.ThisPage);
+    var authorLinks = new List<LinkDto>();
+    /*
+     * We create links for the author once it is successfully created. Those links basically
+     * are the actions which the consumer of the API can take on author upon it's successfull
+     * creation.
+     * This is the place where we decide whether to allow consumer of the API to have knowledge
+     * of some functionality or not.
+     */
+
+    // generate self link as the newly created author can be fetched from the database
+    authorLinks.Add(new LinkDto(
+          href: curPageLink,
+          rel: "self",
+          method: "GET"));
+
+    return authorLinks;
+  }
+
   [HttpGet(Name = "GetAuthors")]
   [HttpHead]
   public async Task<IActionResult> GetAuthors(
@@ -138,6 +165,7 @@ public class AuthorsController : ControllerBase
           resourceParam
           ,ResourceUriType.NextPage) : null;
 
+
     // create the object for custom header
     var paginationMetadata = new 
     {
@@ -151,7 +179,21 @@ public class AuthorsController : ControllerBase
 
     Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
     // return them
-    return Ok(_mapper.Map<IEnumerable<AuthorDto>>(authorsPagedFromRepo).ShapeData(resourceParam.fields));
+    var shapedAuthors = _mapper.Map<IEnumerable<AuthorDto>>(authorsPagedFromRepo).ShapeData(resourceParam.fields);
+
+    shapedAuthors = shapedAuthors.Select( authorExpando => {
+        var authorExpandoDict = authorExpando as IDictionary<string, object>;
+        authorExpandoDict["links"] = CreateLinksForAuthor((Guid) authorExpandoDict["Id"], null);
+        return authorExpando;
+        });
+
+    var shapedAuthorsWithLink = new 
+            { 
+              value = shapedAuthors,
+              links = CreateLinksForAuthors(resourceParam)
+            };
+
+    return Ok(shapedAuthorsWithLink);
   }
 
   [HttpGet("{authorId}", Name = "GetAuthor")]
