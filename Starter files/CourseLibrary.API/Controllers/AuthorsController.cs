@@ -111,7 +111,8 @@ public class AuthorsController : ControllerBase
     return authorLinks;
   }
 
-  private IEnumerable<LinkDto> CreateLinksForAuthors(AuthorsResourceParameters resourceParam)
+  private IEnumerable<LinkDto> CreateLinksForAuthors(AuthorsResourceParameters resourceParam,
+      bool hasPrevious, bool hasNext)
   {
     var curPageLink = CreateAuthorsResourceUri(resourceParam, ResourceUriType.ThisPage);
     var authorLinks = new List<LinkDto>();
@@ -124,10 +125,35 @@ public class AuthorsController : ControllerBase
      */
 
     // generate self link as the newly created author can be fetched from the database
+
     authorLinks.Add(new LinkDto(
           href: curPageLink,
           rel: "self",
           method: "GET"));
+
+    if (hasPrevious)
+    {
+      var previousPageLink = CreateAuthorsResourceUri(
+          resourceParam
+          ,ResourceUriType.PreviousPage);
+
+      authorLinks.Add(new LinkDto(
+            href: previousPageLink,
+            rel: "previou_page_link",
+            method: "GET"));
+    }
+
+    if (hasNext)
+    {
+      var nextPageLink = CreateAuthorsResourceUri(
+          resourceParam
+          ,ResourceUriType.NextPage);
+
+      authorLinks.Add(new LinkDto(
+            href: nextPageLink,
+            rel: "previou_page_link",
+            method: "GET"));
+    }
 
     return authorLinks;
   }
@@ -155,17 +181,6 @@ public class AuthorsController : ControllerBase
     var authorsPagedFromRepo = await _courseLibraryRepository
       .GetAuthorsAsync(resourceParam); 
 
-    var previousPageLink = authorsPagedFromRepo.HasPrevious
-      ? CreateAuthorsResourceUri(
-          resourceParam
-          ,ResourceUriType.PreviousPage) : null;
-
-    var nextPageLink = authorsPagedFromRepo.HasNext
-      ? CreateAuthorsResourceUri(
-          resourceParam
-          ,ResourceUriType.NextPage) : null;
-
-
     // create the object for custom header
     var paginationMetadata = new 
     {
@@ -173,8 +188,6 @@ public class AuthorsController : ControllerBase
       pageSize = authorsPagedFromRepo.PageSize,
       currentPage = authorsPagedFromRepo.CurrentPage,
       totalPages = authorsPagedFromRepo.TotalPages,
-      previousPageLink = previousPageLink,
-      nextPageLink = nextPageLink
     };
 
     Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(paginationMetadata));
@@ -190,7 +203,8 @@ public class AuthorsController : ControllerBase
     var shapedAuthorsWithLink = new 
             { 
               value = shapedAuthors,
-              links = CreateLinksForAuthors(resourceParam)
+              links = CreateLinksForAuthors(resourceParam, authorsPagedFromRepo.HasPrevious,
+                        authorsPagedFromRepo.HasNext)
             };
 
     return Ok(shapedAuthorsWithLink);
