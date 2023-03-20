@@ -65,6 +65,46 @@ public class AuthorsController : ControllerBase
         });
   }
 
+  private IEnumerable<LinkDto> CreateLinksForAuthor(Guid authorId, string? fields)
+  {
+    var authorLinks = new List<LinkDto>();
+    /*
+     * We create links for the author once it is successfully created. Those links basically
+     * are the actions which the consumer of the API can take on author upon it's successfull
+     * creation.
+     * This is the place where we decide whether to allow consumer of the API to have knowledge
+     * of some functionality or not.
+     */
+
+    // generate self link as the newly created author can be fetched from the database
+    if (string.IsNullOrWhiteSpace(fields))
+    {
+      authorLinks.Add(new LinkDto(
+            href: Url.Link ("GetAuthor", new { authorId }),
+            rel: "self",
+            method: "GET"));
+    }
+    else
+    {
+      authorLinks.Add(new LinkDto(
+            href: Url.Link ("GetAuthor", new { authorId, fields}),
+            rel: "self",
+            method: "GET"));
+    }
+
+    authorLinks.Add(new LinkDto(
+          href: Url.Link ("CreateCourseForAuthor", new { authorId }),
+          rel: "create_course_for_author",
+          method: "POST"));
+    
+    authorLinks.Add(new LinkDto(
+          href: Url.Link ("GetCoursesForAuthor", new { authorId }),
+          rel: "courses",
+          method: "GET"));
+
+    return authorLinks;
+  }
+
   [HttpGet(Name = "GetAuthors")]
   [HttpHead]
   public async Task<IActionResult> GetAuthors(
@@ -133,8 +173,12 @@ public class AuthorsController : ControllerBase
     {
       return NotFound();
     }
-    // return author
-    return Ok(_mapper.Map<AuthorDto>(authorFromRepo).ShapeData(fields));
+
+    var links = CreateLinksForAuthor(authorId, fields);
+    var authorShapedResp = _mapper.Map<AuthorDto>(authorFromRepo).ShapeData(fields);
+    authorShapedResp.TryAdd("links", links);
+
+    return Ok(authorShapedResp);
   }
 
   [HttpPost]
@@ -145,11 +189,15 @@ public class AuthorsController : ControllerBase
     _courseLibraryRepository.AddAuthor(authorEntity);
     await _courseLibraryRepository.SaveAsync();
 
-    var authorToReturn = _mapper.Map<AuthorDto>(authorEntity);
+    var authorDto = _mapper.Map<AuthorDto>(authorEntity);
+    var links = CreateLinksForAuthor(authorEntity.Id, null);
+    var authorExpando = authorDto.ShapeData(null);
+
+    authorExpando.TryAdd("links", links);
 
     return CreatedAtRoute("GetAuthor",
-        new { authorId = authorToReturn.Id },
-        authorToReturn);
+        new { authorId = authorDto.Id },
+        authorExpando);
   }
 
   [HttpOptions]
