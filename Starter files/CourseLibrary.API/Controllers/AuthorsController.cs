@@ -1,5 +1,4 @@
 ﻿
-using System.Dynamic;
 using System.Text.Json;
 using AutoMapper;
 using CourseLibrary.API.Helpers;
@@ -8,6 +7,7 @@ using CourseLibrary.API.ResourceParameters;
 using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace CourseLibrary.API.Controllers;
 
@@ -211,8 +211,17 @@ public class AuthorsController : ControllerBase
   }
 
   [HttpGet("{authorId}", Name = "GetAuthor")]
-  public async Task<ActionResult<AuthorDto>> GetAuthor(Guid authorId, string? fields)
+  public async Task<ActionResult<AuthorDto>> GetAuthor(Guid authorId, string? fields
+                                          , [FromHeader(Name = "Accept")] string? mediaType)
   {
+    if (!MediaTypeHeaderValue.TryParse(mediaType, out var parsedMediaType))
+    {
+      return BadRequest(_problemDetailsFactory.CreateProblemDetails(HttpContext,
+                             statusCode: 400,
+                             detail: $"Accept header media type is not a valid media type"));
+
+    }
+
     if (!_propertyCheckerService.TypeHasProperties<AuthorDto>(fields))
       return BadRequest();
 
@@ -230,9 +239,13 @@ public class AuthorsController : ControllerBase
       return NotFound();
     }
 
-    var links = CreateLinksForAuthor(authorId, fields);
     var authorShapedResp = _mapper.Map<AuthorDto>(authorFromRepo).ShapeData(fields);
-    authorShapedResp.TryAdd("links", links);
+
+    if (mediaType == "application/vnd.marvin.hateoas+json")
+    {
+      var links = CreateLinksForAuthor(authorId, fields);
+      authorShapedResp.TryAdd("links", links);
+    }
 
     return Ok(authorShapedResp);
   }
