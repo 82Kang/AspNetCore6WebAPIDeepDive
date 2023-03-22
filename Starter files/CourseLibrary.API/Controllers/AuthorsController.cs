@@ -8,6 +8,7 @@ using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Net.Http.Headers;
+using CourseLibrary.API.ValidationAttributes;
 
 namespace CourseLibrary.API.Controllers;
 
@@ -211,26 +212,50 @@ public class AuthorsController : ControllerBase
   }
 
   [HttpGet("{authorId}", Name = "GetAuthor")]
+  //[ValidateMediaTypeFilter(_problemDetailsFactory)]
+  [Produces("application/json",
+            "application/vnd.marvin.hateoas+json",
+            "application/vnd.marvin.author.full+json",
+            "application/vnd.marvin.author.full.hateoas+json",
+            "application/vnd.marvin.author.friendly+json",
+            "application/vnd.marvin.author.friendly.hateoas+json")]
   public async Task<ActionResult<AuthorDto>> GetAuthor(Guid authorId, string? fields
                                           , [FromHeader(Name = "Accept")] string? mediaType)
   {
+    /*
+     * TODO: Support multiple media type parsing with TryParseList
+    var actionProducesAttribute = ControllerContext.ActionDescriptor.
+      EndpointMetadata.OfType<ProducesAttribute>().FirstOrDefault();
+    var ContentTypes = actionProducesAttribute?.ContentTypes;
+    */
+
     if (!MediaTypeHeaderValue.TryParse(mediaType, out var parsedMediaType))
     {
       return BadRequest(_problemDetailsFactory.CreateProblemDetails(HttpContext,
                              statusCode: 400,
                              detail: $"Accept header media type is not a valid media type"));
-
     }
 
-    if (!_propertyCheckerService.TypeHasProperties<AuthorDto>(fields))
-      return BadRequest();
+    var includeLinks = parsedMediaType.SubTypeWithoutSuffix.
+      EndsWith("hateoas", StringComparison.InvariantCultureIgnoreCase);
 
-    if (!_propertyCheckerService.TypeHasProperties<AuthorDto>(fields))
+    /* ignore the suffix hateos if supplied*/
+    var primaryMediaType = includeLinks ? parsedMediaType.SubTypeWithoutSuffix.Substring(
+                              0, parsedMediaType.SubTypeWithoutSuffix.Length - 8)
+                            : parsedMediaType.SubTypeWithoutSuffix;
+
+    var fullAuthor = primaryMediaType == "vnd.marvin.author.full";
+
+    if ((fullAuthor && !_propertyCheckerService.TypeHasProperties<AuthorFullDto>(fields)) ||
+        (!fullAuthor && !_propertyCheckerService.TypeHasProperties<AuthorDto>(fields)))
+
       return BadRequest(_problemDetailsFactory.CreateProblemDetails(HttpContext,
             statusCode: 400,
             detail: "Not all requested data shaping fields are present"
                     + $"on the resource {fields}"
             ));
+
+    IDictionary<string, object?> authorToReturn;
     // get author from repo
     var authorFromRepo = await _courseLibraryRepository.GetAuthorAsync(authorId);
 
@@ -239,15 +264,20 @@ public class AuthorsController : ControllerBase
       return NotFound();
     }
 
-    var authorShapedResp = _mapper.Map<AuthorDto>(authorFromRepo).ShapeData(fields);
-
-    if (mediaType == "application/vnd.marvin.hateoas+json")
+    if (fullAuthor)
     {
-      var links = CreateLinksForAuthor(authorId, fields);
-      authorShapedResp.TryAdd("links", links);
+      authorToReturn = _mapper.Map<AuthorFullDto>(authorFromRepo)
+                                .ShapeData(fields) as IDictionary<string, object?>;
+    } 
+    else 
+    {
+      authorToReturn = _mapper.Map<AuthorDto>(authorFromRepo)
+                                .ShapeData(fields) as IDictionary<string, object?>;
     }
 
-    return Ok(authorShapedResp);
+    if (includeLinks) authorToReturn.Add("links", CreateLinksForAuthor(authorId, fields));
+
+    return Ok(authorToReturn);
   }
 
   [HttpPost]
