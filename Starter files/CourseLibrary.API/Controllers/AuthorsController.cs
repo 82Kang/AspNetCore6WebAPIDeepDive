@@ -374,7 +374,7 @@ public class AuthorsController : ControllerBase
   [HttpPost]
   [RequestHeaderMatchesMediaTypeAttribute("Content-Type", "application/json",
                          "application/vnd.marvin.authorforcreation+json")]
-  //[Consumes("application/vnd.marvin.authorforcreation+json")]
+  [Consumes("application/vnd.marvin.authorforcreation+json")]
   // only consumes also would work here, keeping the other attribute for educational purpose.
   public async Task<ActionResult<AuthorDto>> CreateAuthor(AuthorForCreationDto author)
   {
