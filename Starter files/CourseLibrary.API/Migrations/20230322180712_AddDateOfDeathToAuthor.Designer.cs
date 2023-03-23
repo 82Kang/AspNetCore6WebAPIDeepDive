@@ -3,6 +3,7 @@ using System;
 using CourseLibrary.API.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseLibrary.API.Migrations
 {
     [DbContext(typeof(CourseLibraryContext))]
-    partial class CourseLibraryContextModelSnapshot : ModelSnapshot
+    [Migration("20230322180712_AddDateOfDeathToAuthor")]
+    partial class AddDateOfDeathToAuthor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.6");
@@ -26,7 +28,7 @@ namespace CourseLibrary.API.Migrations
                     b.Property<long>("DateOfBirth")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long?>("DateOfDeath")
+                    b.Property<long>("DateOfDeath")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("FirstName")
@@ -53,6 +55,7 @@ namespace CourseLibrary.API.Migrations
                         {
                             Id = new Guid("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
                             DateOfBirth = 1279360106496000330L,
+                            DateOfDeath = 0L,
                             FirstName = "Berry",
                             LastName = "Griffin Beak Eldritch",
                             MainCategory = "Ships"
@@ -61,6 +64,7 @@ namespace CourseLibrary.API.Migrations
                         {
                             Id = new Guid("da2fd609-d754-4feb-8acd-c4f9ff13ba96"),
                             DateOfBirth = 1277955145728000330L,
+                            DateOfDeath = 0L,
                             FirstName = "Nancy",
                             LastName = "Swashbuckler Rye",
                             MainCategory = "Rum"
@@ -69,6 +73,7 @@ namespace CourseLibrary.API.Migrations
                         {
                             Id = new Guid("2902b665-1190-4c70-9915-b9c2d7680450"),
                             DateOfBirth = 1264753115136000330L,
+                            DateOfDeath = 0L,
                             FirstName = "Eli",
                             LastName = "Ivory Bones Sweet",
                             MainCategory = "Singing"
@@ -77,6 +82,7 @@ namespace CourseLibrary.API.Migrations
                         {
                             Id = new Guid("102b566b-ba1f-404c-b2df-e2cde39ade09"),
                             DateOfBirth = 1264248815616000330L,
+                            DateOfDeath = 0L,
                             FirstName = "Arnold",
                             LastName = "The Unseen Stafford",
                             MainCategory = "Singing"
@@ -85,6 +91,7 @@ namespace CourseLibrary.API.Migrations
                         {
                             Id = new Guid("5b3621c0-7b12-4e80-9c8b-3398cba7ee05"),
                             DateOfBirth = 1264066560000000330L,
+                            DateOfDeath = 0L,
                             FirstName = "Seabury",
                             LastName = "Toxic Reyson",
                             MainCategory = "Maps"
@@ -93,6 +100,7 @@ namespace CourseLibrary.API.Migrations
                         {
                             Id = new Guid("2aadd2df-7caf-45ab-9355-7f6332985a87"),
                             DateOfBirth = 1279813091328000330L,
+                            DateOfDeath = 0L,
                             FirstName = "Rutherford",
                             LastName = "Fearless Cloven",
                             MainCategory = "General debauchery"
@@ -101,6 +109,7 @@ namespace CourseLibrary.API.Migrations
                         {
                             Id = new Guid("2ee49fe3-edf2-4f91-8409-3eb25ce6ca51"),
                             DateOfBirth = 1280793378816000330L,
+                            DateOfDeath = 0L,
                             FirstName = "Atherton",
                             LastName = "Crow Ridley",
                             MainCategory = "Rum"
