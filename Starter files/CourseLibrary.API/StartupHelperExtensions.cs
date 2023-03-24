@@ -19,6 +19,9 @@ internal static class StartupHelperExtensions
         configure.ReturnHttpNotAcceptable = true;
         // configure.InputFormatters = ..... some input formatter
         // not using here since we already using AddXmlDataContractSerializerFormatters
+        configure.CacheProfiles.Add("240SecondsCacheProfiles", new () {
+              Duration = 240 
+            });
         }).AddNewtonsoftJson(setupAction =>
           {
             setupAction.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -66,6 +69,16 @@ internal static class StartupHelperExtensions
     builder.Services.AddAutoMapper(
         AppDomain.CurrentDomain.GetAssemblies());
 
+    builder.Services.AddResponseCaching();
+    builder.Services.AddHttpCacheHeaders(expirationModelOptions => {
+          /* Controls the Cache-Control header */
+          expirationModelOptions.MaxAge = 120;
+          expirationModelOptions.CacheLocation =
+            Marvin.Cache.Headers.CacheLocation.Private;
+        },
+        validationModelOptions => {
+
+        });
     return builder.Build();
   }
 
@@ -90,7 +103,13 @@ internal static class StartupHelperExtensions
     }
 
     app.UseAuthorization();
-
+    app.UseResponseCaching();
+    /*
+     * Note that HttpCacheHeader middleware should be placed after response caching. This is  
+     * because the request should be served from the cache and should not hit Etag if it is
+     * there in the cache.
+     */
+    app.UseHttpCacheHeaders();
     app.MapControllers(); 
 
     return app; 

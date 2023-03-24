@@ -8,6 +8,7 @@ using CourseLibrary.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using CourseLibrary.API.ActionConstraints;
+using Marvin.Cache.Headers;
 
 namespace CourseLibrary.API.Controllers;
 
@@ -164,7 +165,8 @@ public class AuthorsController : ControllerBase
   }
 
   [HttpGet(Name = "GetAuthors")]
-  [HttpHead]
+  [HttpCacheExpiration (CacheLocation = CacheLocation.Public)]
+  [HttpCacheValidation (MustRevalidate = false)]
   public async Task<IActionResult> GetAuthors(
       [FromQuery] AuthorsResourceParameters resourceParam)
   { 
@@ -374,7 +376,7 @@ public class AuthorsController : ControllerBase
   [HttpPost]
   [RequestHeaderMatchesMediaTypeAttribute("Content-Type", "application/json",
                          "application/vnd.marvin.authorforcreation+json")]
-  [Consumes("application/vnd.marvin.authorforcreation+json")]
+  [Consumes("application/json", "application/vnd.marvin.authorforcreation+json")]
   // only consumes also would work here, keeping the other attribute for educational purpose.
   public async Task<ActionResult<AuthorDto>> CreateAuthor(AuthorForCreationDto author)
   {
