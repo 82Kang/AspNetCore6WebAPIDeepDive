@@ -181,8 +181,10 @@ public class CourseLibraryRepository : ICourseLibraryRepository
         }
 
         return await _context.Authors.Where(a => authorIds.Contains(a.Id))
+          //BUG: OrderBy is not appropriate here as only the last order by is executed
+          //Fix: Use ThenBy
             .OrderBy(a => a.FirstName)
-            .OrderBy(a => a.LastName)
+            .ThenBy(a => a.LastName)
             .ToListAsync();
     }
 
