@@ -19,9 +19,9 @@ internal static class StartupHelperExtensions
         configure.ReturnHttpNotAcceptable = true;
         // configure.InputFormatters = ..... some input formatter
         // not using here since we already using AddXmlDataContractSerializerFormatters
-        configure.CacheProfiles.Add("240SecondsCacheProfiles", new () {
-              Duration = 240 
-            });
+        //configure.CacheProfiles.Add("240SecondsCacheProfiles", new () {
+        //      Duration = 240 
+        //    });
         }).AddNewtonsoftJson(setupAction =>
           {
             setupAction.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -31,6 +31,8 @@ internal static class StartupHelperExtensions
             setupAction.InvalidModelStateResponseFactory = context =>
             {
               // for customizing problem details, create a new object of type problem details
+              var req = context.HttpContext.Request;
+
               var problemDetailsFactory = context.HttpContext.RequestServices
                                                  .GetRequiredService<ProblemDetailsFactory>();
               var validationProblemDetails = problemDetailsFactory.CreateValidationProblemDetails(
@@ -91,6 +93,7 @@ internal static class StartupHelperExtensions
     } 
     else 
     {
+      /*
       app.UseExceptionHandler(appBuilder =>
           {
           appBuilder.Run(async context =>
@@ -100,6 +103,7 @@ internal static class StartupHelperExtensions
                   "An unexpected fault happened. Try again later");
               });
           });
+          */
     }
 
     app.UseAuthorization();

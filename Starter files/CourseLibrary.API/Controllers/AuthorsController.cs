@@ -407,10 +407,7 @@ public class AuthorsController : ControllerBase
   [HttpGet("getit")]
   public ActionResult<string> GetIt(Guid authorId)
   {
-
-    var list = Queryable.AsQueryable(new [] {new { name = "def", occ = "cricketer" }, new { name = "abc", occ = "hockey" }});
-    var sorted = list.DoSort("name");
-    return Ok(list);
+    throw new NotImplementedException();
   }
 }
   /*
